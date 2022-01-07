@@ -1,0 +1,195 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:login_signup/Screens/home_screen.dart';
+
+import '../constants.dart';
+import 'signup_screen.dart';
+
+
+class LoginScreen extends StatefulWidget {
+  LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  bool _isObscure = true;
+  logIn() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+              email: _emailController.text, password: _passwordController.text);
+      var authCredential = userCredential.user;
+      print(authCredential!.uid);
+      if (authCredential.uid.isNotEmpty) {
+        Navigator.push(
+            context, CupertinoPageRoute(builder: (_) => HomeScreen()));
+      } else {
+        Fluttertoast.showToast(msg: 'Please Login With correct Page ');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        Fluttertoast.showToast(
+            msg: 'No user found for that email.',
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Colors.white,
+            textColor: Colors.red,
+            fontSize: 20.0);
+      } else if (e.code == 'wrong-password') {
+        Fluttertoast.showToast(
+            msg: 'Wrong password',
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Colors.white,
+            textColor: Colors.red,
+            fontSize: 20.0);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "LogInSignUp Auth",
+          style: TextStyle(color: deepPurpleColor),
+        ),
+        centerTitle: true,
+        
+      ),
+      body: SafeArea(
+          child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: 50,
+            ),
+            Image.asset('assets/images/login.gif',
+                height: 250, width: double.infinity),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+              child: TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(
+                    Icons.person,
+                    size: 25,
+                    color: Colors.indigo,
+                  ),
+                  hintText: 'Email',
+                  hintStyle: TextStyle(fontSize: 20, color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: new BorderRadius.circular(10.0),
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: new BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.blue)),
+                  isDense: true, // Added this
+                  contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 10),
+                ),
+                cursorColor: Colors.black,
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+              child: TextField(
+                onChanged: (text) {
+                  // When user enter text in textfield getXHelper checktext method will get called
+                },
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  hintText: 'Password',
+                  hintStyle: TextStyle(fontSize: 20, color: Colors.grey),
+                  prefixIcon: Icon(
+                    Icons.lock,
+                    size: 25,
+                    color: Colors.indigo,
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isObscure ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObscure = !_isObscure;
+                      });
+                    },
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: new BorderRadius.circular(10.0),
+                    borderSide: BorderSide(color: Colors.black),
+                  ),
+
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: new BorderRadius.circular(10.0),
+                      borderSide: BorderSide(color: Colors.blue)),
+                  isDense: true, // Added this
+                  contentPadding: EdgeInsets.fromLTRB(10, 20, 10, 10),
+                ),
+                cursorColor: Colors.black,
+                style: TextStyle(color: Colors.black),
+                obscureText: _isObscure,
+                enableSuggestions: false,
+                autocorrect: false,
+                obscuringCharacter: '*',
+              ),
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: FlatButton(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 35),
+                    color: Colors.indigo,
+                    onPressed: () {
+                      logIn();
+                    },
+                    child: Text(
+                      'Login',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    )),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Don\'t have an Account ?',
+                    style: TextStyle(fontSize: 16, color: Colors.indigo)),
+                TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SignUpScreen()));
+                    },
+                    child: Text(
+                      'Sign up ',
+                      style: TextStyle(fontSize: 17, color: Colors.indigo),
+                    ))
+              ],
+            ),
+          ],
+        ),
+      )),
+    );
+  }
+}
